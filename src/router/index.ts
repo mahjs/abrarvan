@@ -12,14 +12,15 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: { requiresAuth: true },
     },
     {
-      path: '/login',
+      path: '/auth/login',
       name: 'login',
       component: Login,
     },
     {
-      path: '/register',
+      path: '/auth/register',
       name: 'register',
       component: Register,
     },
@@ -27,13 +28,25 @@ const router = createRouter({
       path: '/new-article',
       name: 'new-article',
       component: CreateArticle,
+      meta: { requiresAuth: true },
     },
     {
       path: '/edit-article',
       name: 'edit-article',
       component: EditArticle,
+      meta: { requiresAuth: true },
     },
   ],
+})
+
+router.beforeEach((to, _from, next) => {
+  const isAuthenticated = !!localStorage.getItem('token')
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/auth/login')
+  } else {
+    next()
+  }
 })
 
 export default router
