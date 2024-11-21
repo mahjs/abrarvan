@@ -1,24 +1,24 @@
 <script setup lang="ts">
+import NavBar from './components/NavBar.vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { ref, watch } from 'vue'
-import Navbar from './components/Navbar.vue'
 
 const router = useRoute()
 const authRoutes = ['/auth/login', '/auth/register']
-const isAuthRouter = ref(authRoutes.includes(router.path))
+const isAuthRoute = ref(authRoutes.includes(router.path))
 
 watch(
   () => router.path,
   (newPath) => {
-    isAuthRouter.value = authRoutes.includes(newPath)
+    isAuthRoute.value = authRoutes.includes(newPath)
   },
 )
 </script>
 
 <template>
-  <Navbar v-if="!isAuthRouter" />
+  <NavBar v-if="!isAuthRoute" />
   <main class="wrapper">
-    <section v-if="!isAuthRouter" class="navbar bg-primary">
+    <section v-if="!isAuthRoute" class="navbar bg-primary">
       <span class="text-white fs-2">Post</span>
       <nav>
         <RouterLink class="nav-link text-white" to="/">All Articles</RouterLink>

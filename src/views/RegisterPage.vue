@@ -45,7 +45,15 @@
             />
             <div v-if="passwordError" class="invalid-feedback">Required field</div>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Register</button>
+          <button type="submit" class="btn btn-primary w-100">
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span v-if="!loading">Register</span>
+          </button>
         </form>
         <!-- Login Link -->
         <div class="text-center mt-3">
@@ -58,10 +66,13 @@
 
 <script setup lang="ts">
 import { registerUser } from '@/services/api/auth'
+import createMessageFromError from '@/utils/createMessageFromError'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
 const router = useRouter()
+const toast = useToast()
 
 const user = ref('')
 const email = ref('')
@@ -69,8 +80,7 @@ const password = ref('')
 const userError = ref(false)
 const emailError = ref(false)
 const passwordError = ref(false)
-const successMessage = ref('')
-const errorMessage = ref('')
+const loading = ref(false)
 
 const handleRegister = async () => {
   userError.value = !user.value
@@ -78,6 +88,7 @@ const handleRegister = async () => {
   passwordError.value = !password.value
 
   if (!userError.value && !emailError.value && !passwordError.value) {
+    loading.value = true
     try {
       const payload = {
         user: {
@@ -87,10 +98,12 @@ const handleRegister = async () => {
         },
       }
       const response = await registerUser(payload)
-      successMessage.value = `User registered successfully: Welcome, ${response.user.username}!`
+      toast.success(`User registered successfully: Welcome, ${response.user.username}!`)
       router.push('/')
-    } catch (error: unknown) {
-      errorMessage.value = error as string
+    } catch (error: any) {
+      toast.error(createMessageFromError(error))
+    } finally {
+      loading.value = false
     }
   }
 }

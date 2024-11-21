@@ -1,7 +1,7 @@
 import axiosInstance from './axiosInstance'
 
 // Create a new user
-export const registerUser = async (payload) => {
+export const registerUser = async (payload: any) => {
   try {
     const response = await axiosInstance.post('/users', payload)
     return response.data // Return the API response
@@ -10,7 +10,7 @@ export const registerUser = async (payload) => {
   }
 }
 
-export const loginUser = async (payload) => {
+export const loginUser = async (payload: any) => {
   const { data } = await axiosInstance.post('/users/login', payload)
   return data
 }

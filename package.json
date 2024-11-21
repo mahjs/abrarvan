@@ -17,7 +17,8 @@
     "bootstrap": "4.6",
     "sass": "^1.80.6",
     "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",

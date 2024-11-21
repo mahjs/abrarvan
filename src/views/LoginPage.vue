@@ -38,7 +38,16 @@
             />
             <div v-if="passwordError" class="invalid-feedback">Required field</div>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Login</button>
+          <button type="submit" class="btn btn-primary w-100">
+            <span
+              v-if="loading"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span v-if="!loading">Login</span>
+            <!-- You can replace "Login" with "Register" for register -->
+          </button>
         </form>
         <!-- Register Link -->
         <div class="text-center mt-3">
@@ -51,25 +60,27 @@
 
 <script setup lang="ts">
 import { loginUser } from '@/services/api/auth'
+import createMessageFromError from '@/utils/createMessageFromError'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
 const router = useRouter()
+const toast = useToast()
 
 const email = ref('')
 const password = ref('')
 const emailError = ref(false)
 const passwordError = ref(false)
 const loginError = ref(false)
-
-const errorMessage = ref('')
-const successMessage = ref('')
+const loading = ref(false)
 
 const handleLogin = async () => {
   emailError.value = !email.value
   passwordError.value = !password.value
 
   if (!emailError.value && !passwordError.value) {
+    loading.value = true
     try {
       const payload = {
         user: {
@@ -78,15 +89,16 @@ const handleLogin = async () => {
         },
       }
       const response = await loginUser(payload)
-      successMessage.value = `Welcome back, ${response.user.username}!`
-
       // Store token manually if not handled by the interceptor
       localStorage.setItem('token', response.user.token)
 
       // Navigate to the dashboard
+      toast.success('Your successfully logged in.')
       router.push('/')
-    } catch (error) {
-      errorMessage.value = error.message || 'Invalid email or password.'
+    } catch (error: any) {
+      toast.error(createMessageFromError(error))
+    } finally {
+      loading.value = false
     }
   }
 }
