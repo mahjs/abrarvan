@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance'
-import type { LoginReq, RegisterReq } from './interfaces'
+import { type CurrentUser, type LoginReq, type RegisterReq } from './interfaces'
 
 // Create a new user
 export const registerUser = async (payload: RegisterReq) => {
@@ -12,6 +12,12 @@ export const registerUser = async (payload: RegisterReq) => {
 }
 
 export const loginUser = async (payload: LoginReq) => {
-  const { data } = await axiosInstance.post('/users/login', payload)
+  const { data } = await axiosInstance.post<CurrentUser>('/users/login', payload)
+  return data
+}
+
+export const getCurrentUser = async () => {
+  const { data } = await axiosInstance.get<CurrentUser>('/user')
+
   return data
 }

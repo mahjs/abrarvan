@@ -32,6 +32,7 @@ axiosInstance.interceptors.response.use(
     if (response.data?.user?.token) {
       // Store the token in localStorage
       localStorage.setItem('token', response.data.user.token)
+      localStorage.setItem('username', response.data.user.username)
     }
     return response
   },

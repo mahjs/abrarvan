@@ -5,6 +5,7 @@ import Toast from 'vue-toastification'
 import { POSITION, type PluginOptions } from 'vue-toastification'
 
 import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import 'vue-toastification/dist/index.css'
 
 const app = createApp(App)

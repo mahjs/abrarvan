@@ -19,6 +19,7 @@ export default [
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off', // Disable 'any' usage rule
+      '@typescript-eslint/ban-ts-comment': 'off',
     },
   },
 ]
