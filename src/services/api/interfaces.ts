@@ -44,3 +44,10 @@ export interface CreateArticleReq {
   body: string
   tagList: string[]
 }
+
+export interface EditArticleReq {
+  title?: string
+  description?: string
+  body?: string
+  tagList?: string[]
+}

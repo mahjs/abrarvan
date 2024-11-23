@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance'
-import type { Article, CreateArticleReq } from './interfaces'
+import type { Article, CreateArticleReq, EditArticleReq } from './interfaces'
 
 export const getAllArticles = async () => {
   const { data } = await axiosInstance.get<{ articles: Article[]; articlesCount: number }>(
@@ -19,10 +19,21 @@ export const deleteArticle = async (slug: string) => {
 }
 
 export const createNewArticle = async (body: CreateArticleReq) => {
+  console.log('heheheheh')
+
   const data = {
     article: body,
   }
   const { data: response } = await axiosInstance.post('/articles', data)
+
+  return response
+}
+
+export const editArticle = async (slug: string, body: EditArticleReq) => {
+  const data = {
+    article: body,
+  }
+  const { data: response } = await axiosInstance.put(`/articles/${slug}`, data)
 
   return response
 }

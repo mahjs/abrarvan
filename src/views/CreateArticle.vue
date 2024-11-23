@@ -1,12 +1,13 @@
 <template>
-  <div class="mw-100 container mt-4 mx-5">
-    <h2>New Article</h2>
+  <div class="container-fluid container-md mt-4 px-4">
+    <h2>{{ isEditing ? 'Edit Article' : 'New Article' }}</h2>
     <form @submit.prevent="submitArticle">
-      <div class="row">
+      <!-- Main content wrapper -->
+      <div class="row g-4">
         <!-- Left Column: Form Inputs -->
-        <div class="col-md-8">
+        <div class="col-12 col-lg-8 order-0 order-lg-0">
           <!-- Title Field -->
-          <div class="form-group">
+          <div class="form-group mb-3">
             <label for="title">Title</label>
             <input
               v-model="form.title"
@@ -21,7 +22,7 @@
           </div>
 
           <!-- Description Field -->
-          <div class="form-group">
+          <div class="form-group mb-3">
             <label for="description">Description</label>
             <input
               v-model="form.description"
@@ -33,7 +34,7 @@
           </div>
 
           <!-- Body Field -->
-          <div class="form-group">
+          <div class="form-group mb-3">
             <label for="body">Body</label>
             <textarea
               v-model="form.body"
@@ -44,23 +45,13 @@
               required
             ></textarea>
           </div>
-
-          <!-- Submit Button -->
-          <button
-            type="submit"
-            class="btn btn-primary mt-4"
-            :disabled="loading || !form.title || !form.body"
-          >
-            <span v-if="loading" class="spinner-border spinner-border-sm mr-2"></span>
-            Submit
-          </button>
         </div>
 
         <!-- Right Column: Tags Logic -->
-        <div class="col-md-4">
+        <div class="col-12 col-lg-4 order-0 order-lg-1">
           <label for="newTag">Tags</label>
           <!-- New Tag Input -->
-          <div class="d-flex mb-3">
+          <div class="d-flex mb-3 gap-2">
             <input
               v-model="newTag"
               type="text"
@@ -74,7 +65,7 @@
           </div>
 
           <!-- Tags List -->
-          <div class="border rounded p-2" style="max-height: 300px; overflow-y: auto">
+          <div class="border rounded p-2 mb-4" style="max-height: 300px; overflow-y: auto">
             <div class="form-check" v-for="tag in tags" :key="tag">
               <input
                 type="checkbox"
@@ -87,13 +78,25 @@
             </div>
           </div>
         </div>
+
+        <!-- Submit Button Container -->
+        <div class="col-12 my-2 order-2">
+          <button
+            type="submit"
+            class="btn btn-primary w-lg-auto"
+            :disabled="loading || !form.title || !form.body"
+          >
+            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+            Submit
+          </button>
+        </div>
       </div>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { createNewArticle, getArticleBySlug } from '@/services/api/articles'
+import { createNewArticle, editArticle, getArticleBySlug } from '@/services/api/articles'
 import { getAllTags } from '@/services/api/tags'
 import createMessageFromError from '@/utils/createMessageFromError'
 import { ref, onMounted } from 'vue'
@@ -137,10 +140,11 @@ const submitArticle = async () => {
   loading.value = true
 
   try {
-    await createNewArticle(form.value)
+    if (isEditing.value && slug.value) await editArticle(slug.value, form.value)
+    else await createNewArticle(form.value)
 
     router.push('/')
-    toast.success('Well Done! Article created successfully')
+    toast.success(`Well Done! Article ${slug.value ? 'Edited' : 'created'} successfully`)
   } catch (error: any) {
     toast.error(createMessageFromError(error))
   } finally {
@@ -149,13 +153,16 @@ const submitArticle = async () => {
 }
 
 // Fetch tags on component mount
+const isEditing = ref(false)
+const slug = ref<string | null>(null)
 const route = useRoute()
 onMounted(async () => {
   fetchTags()
 
-  const slug = route.query.slug as string
-  if (slug) {
-    const { article } = await getArticleBySlug(slug)
+  slug.value = route.query.slug as string
+  if (slug.value) {
+    isEditing.value = true
+    const { article } = await getArticleBySlug(slug.value)
     form.value = {
       title: article.title,
       description: article.description,
