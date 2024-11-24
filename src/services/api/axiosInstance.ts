@@ -30,6 +30,13 @@ axiosInstance.interceptors.response.use(
     return response
   },
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('username')
+
+      window.location.href = '/login' // or use your login route
+    }
+
     return Promise.reject(error.response?.data || error.message)
   },
 )
