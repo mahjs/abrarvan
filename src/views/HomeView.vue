@@ -16,61 +16,73 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            class="border-bottom border-light article-row"
-            v-for="(item, index) in paginatedArticles"
-            :key="index"
-          >
-            <td>{{ index + 1 }}</td>
-            <td>{{ item.title.substring(0, 12) }}...</td>
-            <td>{{ item.author.username }}</td>
-            <td>
-              <span>{{ item.tagList.join(', ') }}</span>
-            </td>
-            <td>{{ item.description.substring(0, 30) }}...</td>
-            <td class="d-flex justify-content-between">
-              {{ formatDate(item.createdAt) }}
-              <ArticleActions
-                :item="item"
-                @edit="handleEditArticle"
-                @delete="deletingArticleSlug = $event"
-              />
-            </td>
-          </tr>
+          <template v-if="loading">
+            <SkeletonRow v-for="n in 10" :key="`skeleton-${n}`" />
+          </template>
+          <template v-else>
+            <tr
+              class="border-bottom border-light article-row"
+              v-for="(item, index) in articles"
+              :key="index"
+            >
+              <td>{{ index + 1 }}</td>
+              <td>
+                {{ item.title.length > 12 ? `${item.title.substring(0, 12)}...` : item.title }}
+              </td>
+              <td>{{ item.author.username }}</td>
+              <td>
+                <span>{{ item.tagList.join(', ') }}</span>
+              </td>
+              <td>{{ item.description.substring(0, 30) }}...</td>
+              <td class="d-flex justify-content-between">
+                {{ formatDate(item.createdAt) }}
+                <ArticleActions
+                  :item="item"
+                  @edit="handleEditArticle"
+                  @delete="deletingArticleSlug = $event"
+                />
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
 
-    <!-- Mobile/Tablet Card View -->
     <div class="d-lg-none">
-      <div v-for="(item, index) in paginatedArticles" :key="index" class="article-card">
-        <div class="card mb-3">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h5 class="card-title mb-0">{{ item.title }}</h5>
-              <ArticleActions
-                :item="item"
-                @edit="handleEditArticle"
-                @delete="deletingArticleSlug = $event"
-              />
-            </div>
-            <h6 class="card-subtitle mb-2 text-muted">By {{ item.author.username }}</h6>
-            <p class="card-text">{{ item.description.substring(0, 100) }}...</p>
-            <div class="mt-2">
-              <span class="text-muted small">Created: {{ formatDate(item.createdAt) }}</span>
-            </div>
-            <div class="mt-2">
-              <span
-                v-for="(tag, tagIndex) in item.tagList"
-                :key="tagIndex"
-                class="badge bg-light text-dark me-1"
-              >
-                {{ tag }}
-              </span>
+      <template v-if="loading">
+        <CardSkeletonLoader v-for="n in 5" :key="`skeleton-${n}`" />
+      </template>
+
+      <template v-else>
+        <div v-for="(item, index) in articles" :key="index" class="article-card">
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="card-title mb-0">{{ item.title }}</h5>
+                <ArticleActions
+                  :item="item"
+                  @edit="handleEditArticle"
+                  @delete="deletingArticleSlug = $event"
+                />
+              </div>
+              <h6 class="card-subtitle mb-2 text-muted">By {{ item.author.username }}</h6>
+              <p class="card-text">{{ item.description.substring(0, 100) }}...</p>
+              <div class="mt-2">
+                <span class="text-muted small">Created: {{ formatDate(item.createdAt) }}</span>
+              </div>
+              <div class="mt-2">
+                <span
+                  v-for="(tag, tagIndex) in item.tagList"
+                  :key="tagIndex"
+                  class="badge bg-light text-dark me-1"
+                >
+                  {{ tag }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
     </div>
 
     <!-- Pagination -->
@@ -128,13 +140,16 @@
 </template>
 
 <script setup lang="ts">
-import { deleteArticle, getAllArticles } from '@/services/api/articles'
+import { deleteArticle, getArticles } from '@/services/api/articles'
 import { type Article } from '@/services/api/interfaces'
-import { computed, onMounted, ref, type ComputedRef } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useToast } from 'vue-toastification'
 import $ from 'jquery'
 import { useRouter } from 'vue-router'
 import ArticleActions from '@/components/ArticleActions.vue'
+import { useLoading } from '@/composable/useLoading'
+import SkeletonRow from '@/components/skeleton/SkeletonRow.vue'
+import CardSkeletonLoader from '@/components/skeleton/CardSkeletonLoader.vue'
 
 const toast = useToast()
 const router = useRouter()
@@ -144,10 +159,16 @@ const currentPage = ref(1)
 const totalPages = ref(0)
 const deletingArticleSlug = ref<string | null>(null)
 
+const { loading, withLoading } = useLoading()
+const fetchArticles = () => {
+  withLoading(async () => {
+    const { articles: fetchedArticles, articlesCount } = await getArticles(currentPage.value)
+    articles.value = fetchedArticles
+    totalPages.value = Math.ceil(articlesCount / 10)
+  })
+}
 onMounted(async () => {
-  const { articles: allArticles, articlesCount } = await getAllArticles()
-  articles.value = allArticles
-  totalPages.value = Math.ceil(articlesCount / 10)
+  await fetchArticles()
 })
 
 const formatDate = (isoDate: string) => {
@@ -159,12 +180,6 @@ const formatDate = (isoDate: string) => {
   })
 }
 
-const paginatedArticles: ComputedRef<Article[]> = computed(() => {
-  const start = (currentPage.value - 1) * 10
-  const end = start + 10
-  return articles.value.slice(start, end)
-})
-
 const changePage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
@@ -175,6 +190,8 @@ const deleteArticleHandler = async () => {
   if (!deletingArticleSlug.value) return
   try {
     await deleteArticle(deletingArticleSlug.value)
+    toast.success('Article deleted successfully.')
+    await fetchArticles()
   } catch (error: any) {
     toast.error(error?.message)
   } finally {
@@ -189,6 +206,10 @@ const handleEditArticle = (slug: string) => {
     query: { slug },
   })
 }
+
+watch(currentPage, async () => {
+  await fetchArticles()
+})
 </script>
 
 <style scoped>

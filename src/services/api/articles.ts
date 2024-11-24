@@ -1,9 +1,9 @@
 import axiosInstance from './axiosInstance'
 import type { Article, CreateArticleReq, EditArticleReq } from './interfaces'
 
-export const getAllArticles = async () => {
+export const getArticles = async (page = 1) => {
   const { data } = await axiosInstance.get<{ articles: Article[]; articlesCount: number }>(
-    '/articles',
+    `/articles${page > 1 ? `/page/${page}` : ''}`,
   )
   return data
 }

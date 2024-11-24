@@ -64,19 +64,23 @@
             </button>
           </div>
 
-          <!-- Tags List -->
-          <div class="border rounded p-2 mb-4" style="max-height: 300px; overflow-y: auto">
-            <div class="form-check" v-for="tag in tags" :key="tag">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                :id="`tag-${tag}`"
-                :value="tag"
-                v-model="form.tagList"
-              />
-              <label class="form-check-label" :for="`tag-${tag}`">{{ tag }}</label>
+          <template v-if="loadingTags">
+            <TagsSkeletonLoader :count="8" />
+          </template>
+          <template v-else>
+            <div class="border rounded p-2 mb-4" style="max-height: 300px; overflow-y: auto">
+              <div class="form-check" v-for="tag in tags" :key="tag">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  :id="`tag-${tag}`"
+                  :value="tag"
+                  v-model="form.tagList"
+                />
+                <label class="form-check-label" :for="`tag-${tag}`">{{ tag }}</label>
+              </div>
             </div>
-          </div>
+          </template>
         </div>
 
         <!-- Submit Button Container -->
@@ -96,6 +100,8 @@
 </template>
 
 <script setup lang="ts">
+import TagsSkeletonLoader from '@/components/skeleton/TagsSkeletonLoader.vue'
+import { useLoading } from '@/composable/useLoading'
 import { createNewArticle, editArticle, getArticleBySlug } from '@/services/api/articles'
 import { getAllTags } from '@/services/api/tags'
 import createMessageFromError from '@/utils/createMessageFromError'
@@ -117,14 +123,25 @@ const newTag = ref('')
 const loading = ref(false)
 
 // Fetch available tags
+const { loading: loadingTags, withLoading } = useLoading()
 const fetchTags = async () => {
-  try {
-    const { tags: allTags } = await getAllTags()
-    tags.value = allTags
-  } catch (error) {
-    console.error('Error fetching tags:', error)
-  }
+  withLoading(async () => {
+    try {
+      const { tags: allTags } = await getAllTags()
+      tags.value = allTags
+    } catch (error) {
+      console.error('Error fetching tags:', error)
+    }
+  })
 }
+// const fetchTags = async () => {
+//   try {
+//     const { tags: allTags } = await getAllTags()
+//     tags.value = allTags
+//   } catch (error) {
+//     console.error('Error fetching tags:', error)
+//   }
+// }
 
 // Add a new tag
 const addTag = () => {
