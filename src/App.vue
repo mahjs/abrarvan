@@ -146,6 +146,7 @@ watch(
   display: flex;
   flex-direction: column;
   padding: 2rem;
+  height: 100%;
   min-height: calc(100vh - 60px);
   top: 0;
   left: 0;
