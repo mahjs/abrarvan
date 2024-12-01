@@ -3,10 +3,6 @@
     <div class="card shadow-sm" style="width: 400px">
       <div class="card-body">
         <h2 class="text-center mb-4">LOGIN</h2>
-        <!-- Login Failed Message -->
-        <div v-if="loginError" class="alert alert-danger alert-dismissible fade show" role="alert">
-          <strong>Login Failed!</strong> User name and/or Password is invalid
-        </div>
         <!-- Login Form -->
         <form @submit.prevent="handleLogin">
           <div class="mb-3">
@@ -72,7 +68,6 @@ const email = ref('')
 const password = ref('')
 const emailError = ref(false)
 const passwordError = ref(false)
-const loginError = ref(false)
 const loading = ref(false)
 
 const handleLogin = async () => {

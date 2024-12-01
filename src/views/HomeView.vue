@@ -48,6 +48,7 @@
       </table>
     </div>
 
+    <!-- Mobile Table View -->
     <div class="d-lg-none">
       <template v-if="loading">
         <CardSkeletonLoader v-for="n in 5" :key="`skeleton-${n}`" />

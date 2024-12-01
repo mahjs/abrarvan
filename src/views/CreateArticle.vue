@@ -134,14 +134,6 @@ const fetchTags = async () => {
     }
   })
 }
-// const fetchTags = async () => {
-//   try {
-//     const { tags: allTags } = await getAllTags()
-//     tags.value = allTags
-//   } catch (error) {
-//     console.error('Error fetching tags:', error)
-//   }
-// }
 
 // Add a new tag
 const addTag = () => {
@@ -171,8 +163,8 @@ const submitArticle = async () => {
 
 // Fetch tags on component mount
 const isEditing = ref(false)
-const slug = ref<string | null>(null)
 const route = useRoute()
+const slug = ref<string | null>(null)
 onMounted(async () => {
   fetchTags()
 
